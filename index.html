@@ -21,17 +21,78 @@ body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;ov
 /* CANVAS */
 #bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none}
 
-/* CURSOR — desktop only */
-@media(pointer:fine){
-  body{cursor:none}
-  .cur,.cur-ring{display:block}
+/* ── CURSOR SYSTEM ── */
+@media(pointer:fine){body{cursor:none}.cur,.cur-ring,.cur-trail{display:block}}
+@media(pointer:coarse){.cur,.cur-ring,.cur-trail{display:none}body{cursor:auto}}
+
+/* dot */
+.cur{
+  width:10px;height:10px;
+  background:#fff;
+  border-radius:50%;
+  position:fixed;top:0;left:0;
+  pointer-events:none;z-index:9999;
+  transform:translate(-50%,-50%);
+  display:none;
+  box-shadow:
+    0 0 0 2px rgba(0,0,0,.8),
+    0 0 10px var(--cyan),
+    0 0 22px var(--cyan),
+    0 0 40px rgba(6,182,212,.5);
+  transition:transform .08s, background .15s, box-shadow .15s;
+  mix-blend-mode:normal;
 }
-@media(pointer:coarse){
-  .cur,.cur-ring{display:none}
-  body{cursor:auto}
+/* outer ring */
+.cur-ring{
+  width:38px;height:38px;
+  border:2px solid #fff;
+  border-radius:50%;
+  position:fixed;top:0;left:0;
+  pointer-events:none;z-index:9998;
+  transform:translate(-50%,-50%);
+  display:none;
+  opacity:.9;
+  transition:width .2s,height .2s,border-color .2s,opacity .2s;
+  box-shadow:
+    0 0 0 1px rgba(0,0,0,.6),
+    0 0 12px rgba(6,182,212,.7),
+    inset 0 0 8px rgba(6,182,212,.2);
 }
-.cur{width:8px;height:8px;background:var(--cyan);border-radius:50%;position:fixed;top:0;left:0;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);box-shadow:0 0 12px var(--cyan),0 0 24px var(--cyan);display:none}
-.cur-ring{width:32px;height:32px;border:1px solid var(--p2);border-radius:50%;position:fixed;top:0;left:0;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);opacity:.7;display:none;transition:width .2s,height .2s,border-color .2s}
+/* crosshair lines */
+.cur-ring::before,.cur-ring::after{
+  content:'';position:absolute;background:#fff;opacity:.7;
+  top:50%;left:50%;
+}
+.cur-ring::before{width:6px;height:1.5px;transform:translate(-50%,-50%);box-shadow:-10px 0 0 var(--cyan),10px 0 0 var(--cyan)}
+.cur-ring::after{width:1.5px;height:6px;transform:translate(-50%,-50%);box-shadow:0 -10px 0 var(--cyan),0 10px 0 var(--cyan)}
+
+/* hover state */
+.cur.hov{
+  background:var(--cyan);
+  transform:translate(-50%,-50%) scale(1.5);
+  box-shadow:0 0 0 2px rgba(0,0,0,.8),0 0 16px var(--cyan),0 0 32px var(--cyan),0 0 60px rgba(6,182,212,.6);
+}
+.cur-ring.hov{
+  width:52px;height:52px;
+  border-color:var(--cyan);
+  box-shadow:0 0 0 1px rgba(0,0,0,.5),0 0 20px var(--cyan),0 0 40px rgba(6,182,212,.4),inset 0 0 12px rgba(6,182,212,.15);
+}
+
+/* click ripple */
+.cur-click{
+  position:fixed;pointer-events:none;z-index:9997;
+  width:50px;height:50px;border-radius:50%;
+  border:2px solid var(--cyan);
+  transform:translate(-50%,-50%) scale(0);
+  display:none;
+}
+.cur-click.fire{
+  animation:clickRipple .5s ease-out forwards;
+}
+@keyframes clickRipple{
+  0%{transform:translate(-50%,-50%) scale(0);opacity:.9}
+  100%{transform:translate(-50%,-50%) scale(2.5);opacity:0}
+}
 
 /* SCROLL BAR */
 ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--p);border-radius:2px}
@@ -260,6 +321,7 @@ footer{padding:1.75rem 2rem;border-top:1px solid var(--border);display:flex;just
 <canvas id="bg-canvas"></canvas>
 <div class="cur" id="cur"></div>
 <div class="cur-ring" id="curR"></div>
+<div class="cur-click" id="curClick"></div>
 <div id="sline"></div>
 
 <!-- NAV -->
@@ -636,16 +698,56 @@ function drawLinks(){
 function animate(){ctx.clearRect(0,0,W,H);drawHex();particles.forEach(p=>{p.update();p.draw()});drawLinks();requestAnimationFrame(animate)}
 animate();
 
-/* ── CURSOR (desktop only) ── */
+/* ── CURSOR SYSTEM (desktop only) ── */
 const cur=document.getElementById('cur');
 const curR=document.getElementById('curR');
+const curClick=document.getElementById('curClick');
 if(window.matchMedia('(pointer:fine)').matches){
   let mx=0,my=0,rx=0,ry=0;
+
   document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY});
-  (function ac(){cur.style.left=mx+'px';cur.style.top=my+'px';rx+=(mx-rx)*.13;ry+=(my-ry)*.13;curR.style.left=rx+'px';curR.style.top=ry+'px';requestAnimationFrame(ac)})();
-  document.querySelectorAll('a,button,.stat-box,.skill-card,.bounty-card,.exp-item,.tag').forEach(el=>{
-    el.addEventListener('mouseenter',()=>{cur.style.transform='translate(-50%,-50%) scale(2.5)';cur.style.background='var(--p2)';curR.style.width='48px';curR.style.height='48px';curR.style.borderColor='var(--p2)'});
-    el.addEventListener('mouseleave',()=>{cur.style.transform='translate(-50%,-50%) scale(1)';cur.style.background='var(--cyan)';curR.style.width='32px';curR.style.height='32px';curR.style.borderColor='var(--p2)'});
+
+  (function animCur(){
+    // dot snaps instantly
+    cur.style.left=mx+'px';
+    cur.style.top=my+'px';
+    // ring lags slightly
+    rx+=(mx-rx)*.12;
+    ry+=(my-ry)*.12;
+    curR.style.left=rx+'px';
+    curR.style.top=ry+'px';
+    requestAnimationFrame(animCur);
+  })();
+
+  // hover state
+  const hoverEls='a,button,.stat-box,.skill-card,.bounty-card,.exp-item,.tag,.clink,.btn-primary,.btn-ghost,.nav-pill';
+  document.querySelectorAll(hoverEls).forEach(el=>{
+    el.addEventListener('mouseenter',()=>{
+      cur.classList.add('hov');
+      curR.classList.add('hov');
+    });
+    el.addEventListener('mouseleave',()=>{
+      cur.classList.remove('hov');
+      curR.classList.remove('hov');
+    });
+  });
+
+  // click ripple
+  document.addEventListener('mousedown',e=>{
+    curClick.style.left=e.clientX+'px';
+    curClick.style.top=e.clientY+'px';
+    curClick.style.display='block';
+    curClick.classList.remove('fire');
+    void curClick.offsetWidth; // reflow
+    curClick.classList.add('fire');
+    // dot squeeze on click
+    cur.style.transform='translate(-50%,-50%) scale(.6)';
+    setTimeout(()=>{
+      cur.style.transform=cur.classList.contains('hov')?'translate(-50%,-50%) scale(1.5)':'translate(-50%,-50%) scale(1)';
+    },120);
+  });
+  document.addEventListener('mouseup',()=>{
+    setTimeout(()=>curClick.style.display='none',500);
   });
 }
 
