@@ -314,6 +314,33 @@ footer{padding:1.75rem 2rem;border-top:1px solid var(--border);display:flex;just
   color:var(--pink);text-transform:uppercase;
   clip-path:polygon(0 0,calc(100% - 4px) 0,100% 4px,100% 100%,4px 100%,0 calc(100% - 4px));
 }
+
+/* hidden personal data */
+.hidden-data{
+  font-family:'Space Mono',monospace;
+  letter-spacing:.04em;
+  color:var(--dim);
+  filter:blur(3.5px);
+  transition:filter .3s,color .3s;
+  user-select:none;
+  cursor:pointer;
+}
+.hidden-data.revealed{
+  filter:none;
+  color:var(--text);
+  user-select:text;
+}
+.reveal-btn{
+  font-size:.7rem;
+  cursor:pointer;
+  opacity:.5;
+  transition:opacity .2s;
+  display:inline-block;
+  margin-left:3px;
+  vertical-align:middle;
+}
+.reveal-btn:hover{opacity:1}
+
 </style>
 </head>
 <body>
@@ -396,8 +423,8 @@ footer{padding:1.75rem 2rem;border-top:1px solid var(--border);display:flex;just
     </div>
     <div class="info-panel reveal">
       <div class="info-row"><span class="info-k">Location</span><span class="info-v">Bengaluru, India</span></div>
-      <div class="info-row"><span class="info-k">Email</span><span class="info-v">sho3hit@gmail.com</span></div>
-      <div class="info-row"><span class="info-k">Phone</span><span class="info-v">+91 8493894294</span></div>
+      <div class="info-row"><span class="info-k">Email</span><span class="info-v"><span class="hidden-data" data-val="sho3hit@gmail.com">s*****t@gmail.com</span> <span class="reveal-btn" onclick="revealData(this)">👁</span></span></div>
+      <div class="info-row"><span class="info-k">Phone</span><span class="info-v"><span class="hidden-data" data-val="+91 8493894294">+91 ••••••4294</span> <span class="reveal-btn" onclick="revealData(this)">👁</span></span></div>
       <div class="info-row"><span class="info-k">Education</span><span class="info-v">B.E. CSE — SMVDU</span></div>
       <div class="info-row"><span class="info-k">Cert</span><span class="info-v">OSCP (pursuing)</span></div>
       <div class="info-row"><span class="info-k">Status</span><span class="info-v"><span class="status-dot">Available for roles</span></span></div>
@@ -420,7 +447,7 @@ footer{padding:1.75rem 2rem;border-top:1px solid var(--border);display:flex;just
       <div class="exp-top">
         <div>
           <div class="exp-role">Founder &amp; Owner</div>
-          <div class="exp-co" style="color:var(--pink)"><a href="https://www.hackeronce.com" target="_blank" rel="noopener" style="color:var(--pink);text-decoration:none;">HackerOnce</a> &nbsp;·&nbsp; Web &amp; Mobile Security</div>
+          <div class="exp-co" style="color:var(--pink)"><a href="https://www.hackeronce.com" target="_blank" rel="noopener" style="color:var(--pink);text-decoration:none;border-bottom:1px solid rgba(236,72,153,.35)">HackerOnce ↗</a> &nbsp;·&nbsp; Web &amp; Mobile Security</div>
         </div>
         <div>
           <div class="exp-date">2024 — Present</div>
@@ -610,13 +637,13 @@ footer{padding:1.75rem 2rem;border-top:1px solid var(--border);display:flex;just
   <h2 class="sec-title reveal">Let's <span class="hl">Connect</span></h2>
   <div class="contact-grid">
     <div class="contact-links reveal">
-      <a class="clink" href="mailto:sho3hit@gmail.com">
+      <a class="clink" href="#contact" onclick="return false;">
         <i class="clink-ico">✉</i>
-        <div><div class="clink-lbl">Email</div><div class="clink-val">sho3hit@gmail.com</div></div>
+        <div><div class="clink-lbl">Email</div><div class="clink-val"><span class="hidden-data" data-val="sho3hit@gmail.com">s*****t@gmail.com</span> <span class="reveal-btn" onclick="revealData(this)">👁</span></div></div>
       </a>
-      <a class="clink" href="tel:+918493894294">
+      <a class="clink" href="#contact" onclick="return false;">
         <i class="clink-ico">✆</i>
-        <div><div class="clink-lbl">Phone</div><div class="clink-val">+91 8493894294</div></div>
+        <div><div class="clink-lbl">Phone</div><div class="clink-val"><span class="hidden-data" data-val="+91 8493894294">+91 ••••••4294</span> <span class="reveal-btn" onclick="revealData(this)">👁</span></div></div>
       </a>
       <a class="clink" href="https://www.linkedin.com/in/sho3hit/" target="_blank" rel="noopener">
         <i class="clink-ico">in</i>
@@ -776,6 +803,32 @@ function closeMenu(){
   document.getElementById('hamburger').classList.remove('open');
   document.getElementById('mobileNav').classList.remove('open');
   document.body.style.overflow='';
+}
+
+/* reveal personal data on click */
+function revealData(btn) {
+  const span = btn.previousElementSibling;
+  if (span.classList.contains('revealed')) {
+    span.textContent = span.dataset.val.includes('@')
+      ? 's*****t@gmail.com'
+      : '+91 ••••••4294';
+    span.classList.remove('revealed');
+    btn.textContent = '👁';
+  } else {
+    span.textContent = span.dataset.val;
+    span.classList.add('revealed');
+    btn.textContent = '🙈';
+    // auto-hide after 8 seconds
+    setTimeout(() => {
+      if (span.classList.contains('revealed')) {
+        span.textContent = span.dataset.val.includes('@')
+          ? 's*****t@gmail.com'
+          : '+91 ••••••4294';
+        span.classList.remove('revealed');
+        btn.textContent = '👁';
+      }
+    }, 8000);
+  }
 }
 </script>
 </body>
